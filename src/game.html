@@ -615,7 +615,11 @@
 
     /* ── 决策页：动作列表优先，网络图可折叠 ── */
     body.sim-active .app{padding-bottom:calc(var(--tabbar-h) + 104px + env(safe-area-inset-bottom,0px))}
-    #screen-decision > div[data-decision-grid]{gap:12px!important}
+    /* v115：1fr 轨道的最小宽度是 auto，长内容（人物介绍里的长词/nowrap 标签）会把轨道
+       撑出屏幕——minmax(0,1fr) 强制轨道不超过容器 */
+    #screen-decision > div[data-decision-grid]{gap:12px!important;grid-template-columns:minmax(0,1fr)!important}
+    #screen-decision > div[data-decision-grid] > .panel{min-width:0}
+    #screen-decision > div[data-decision-grid] .detail{overflow-wrap:break-word}
     #screen-decision > div[data-decision-grid] > .panel:nth-child(2){position:static!important;max-height:none!important;overflow:visible!important;order:2}
     #screen-decision > div[data-decision-grid] > .panel:nth-child(2) .svg-wrapper{height:300px!important}
     #screen-decision > div[data-decision-grid] > .panel:nth-child(2).net-collapsed .svg-wrapper,
@@ -653,7 +657,7 @@
     .modal{padding:0;align-items:stretch}
     .modal-card{
       max-width:none;width:100%;max-height:100dvh;height:100dvh;
-      border-radius:0;padding:16px 14px calc(150px + env(safe-area-inset-bottom,0px));
+      border-radius:0;padding:16px 14px calc(var(--tabbar-h) + 88px + env(safe-area-inset-bottom,0px));
       display:flex;flex-direction:column;
     }
     #impactBody{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
@@ -7004,6 +7008,9 @@ function syncTabbarMetrics(){
   document.documentElement.style.setProperty('--tabbar-h', Math.max(0, Math.round(h-sab))+'px');
 }
 window.addEventListener('resize', syncTabbarMetrics);
+/* v115：字体加载/语言切换会改变标签栏按钮的实际高度——加载完和切换后各复测一次，
+   不然推进栏和标签栏之间会留一条缝（或重叠） */
+window.addEventListener('load', ()=>{ syncTabbarMetrics(); setTimeout(syncTabbarMetrics, 600); });
 
 /* v17：从「姓名 → 介绍 → 模拟」过渡时揭示顶栏/HUD/标签栏 */
 function revealSimulationChrome(){

@@ -397,6 +397,8 @@ function applyLang(next, first){
   }
   const btn = document.getElementById('langToggleBtn');
   if(btn) btn.textContent = (lang === 'en') ? '中文' : 'EN';
+  /* v115：语言切换会改变标签栏按钮的字体与折行，高度可能变——复测量再定位推进栏 */
+  try{ if(typeof syncTabbarMetrics === 'function') setTimeout(syncTabbarMetrics, 60); }catch(_){}
 }
 
 /* ── toggle button (persistent, fixed top-right) ───────────────── */
