@@ -5901,11 +5901,11 @@ function diagnose(){
   // —— 3. 连续无转化
   /* v81：前 3 回合本来就没人转化——约谈只是摸情况，第一脚往往要到第 3-4 回合才落地。
      这时候跳出来说「你停滞了」，只会让学生以为自己走错了路。
-     改成跑满 4 回合才提，且只在确实一直没进展时才提。 */
-  const noConv=state.history.slice(-3).every(h=>((h.deltas&&h.deltas.converted)||0)===0);
-  if(noConv && state.history.length>=4){
+     v111：进一步放宽——跑满 5 回合仍无新增转化才提。 */
+  const noConv=state.history.slice(-5).every(h=>((h.deltas&&h.deltas.converted)||0)===0);
+  if(noConv && state.history.length>=5){
     out.push({k:'warn', tag:'停滞', w:80,
-      t:`已经 ${Math.min(3,state.history.length)} 回合没有新增转化了。看看结果页的「这一步动了谁」：如果每个人都在涨分但没人升档，说明你在给已经快满的人加溢出的分，而该被推的人没被推到。`});
+      t:`已经 ${Math.min(5,state.history.length)} 回合没有新增转化了。看看结果页的「这一步动了谁」：如果每个人都在涨分但没人升档，说明你在给已经快满的人加溢出的分，而该被推的人没被推到。`});
   }
 
   // —— 4. 私交没被利用
