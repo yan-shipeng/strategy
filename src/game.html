@@ -2383,14 +2383,14 @@ const GLYPHS=['◯','◯','◯','◕','●'];
 const STATUS_LABELS=['初步理解','初步理解','初步理解','有限认同','完全配合'];
 const STATUS_CUTOFFS=[0,0,0,65,85];
 const STATUS_INFO=[
-  {min:0,  decay:-2, what:'还没认同。对他喊话打四折，每回合自己冷掉 2 分。', how:'只有点名谈得动。'},
-  {min:25, decay:-1, what:'听说了，但没被说服。喊话打七折，每回合冷掉 1 分。', how:'广播能推一点，但推不住，一停就退。'},
-  {min:40, decay:-1, what:'有点动心，但还没点头。喊话全额有效，可每回合仍会冷掉 1 分。', how:'这是做通报、表彰最划算的时候，但别指望它自己往前走。'},
+  {min:0,  decay:-2, what:'还没认同。对他喊话打四折，放着不管每回合都会冷回去。', how:'只有点名谈得动。'},
+  {min:25, decay:-1, what:'听说了，但没被说服。喊话打七折，放着不管每回合都会冷一点。', how:'广播能推一点，但推不住，一停就退。'},
+  {min:40, decay:-1, what:'有点动心，但还没点头。喊话全额有效，可放着不管还是会冷。', how:'这是做通报、表彰最划算的时候，但别指望它自己往前走。'},
   {min:65, decay:0,  what:'认同了，但只做被要求的部分。从这一档起不再掉分。', how:'给他工具和制度，别再说服。'},
   {min:85, decay:0,  what:'会替你去说服别人，能当内部讲师。', how:'该让他带人了。'}
 ];
 function statusInfo(s){ return STATUS_INFO[s] || STATUS_INFO[0]; }
-function decayHint(s){ const d=statusInfo(s).decay; return d<0 ? ('每回合自然 '+d) : '不再掉分'; }
+function decayHint(s){ const d=statusInfo(s).decay; return d<0 ? '越冷回得越快' : '不再掉分'; }
 
 /* =========================================================
    v31：隐藏信息

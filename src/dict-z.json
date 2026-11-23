@@ -434,5 +434,9 @@
  "👥 一次谈了 ${n} 个人（耗 ${cost} 资源）：每个人的信息都挖齐了，被同一场约谈卷进来的几个人，彼此也熟络了一分。": "👥 Talked to ${n} people at once (${cost} resources): every person's information came out in full, and the people swept into the same interview warm up to each other a little.",
  "🔒 隐藏目标与动作偏好：未知。做一次「信息打探」就能全部摸清——谈几个人都行。": "🔒 Hidden goal & action preference: unknown. One Info Gathering reveals everything — with any number of people.",
  "🔒 隐藏目标：还没摸清——做一次「信息打探」就能问出来，谈几个人都行。": "🔒 Hidden goal: not yet uncovered — one Info Gathering will bring it out, with any number of people.",
- "⚠️ 批量打探：一次谈 ${n} 个人 = ${c} 资源（一对一只要 1，价格非线性上涨）。省下的是回合，多花的是资源；被同一场约谈卷进来的人，彼此也会熟络一分。每个人的信息无论谈几个都挖得一样深。": "⚠️ Batch gathering: ${n} people in one sitting = ${c} resources (one-on-one costs just 1; the price rises non-linearly). What you save is rounds; what you spend is resources — and people swept into the same interview warm up to each other. Everyone's information comes out equally deep however many you talk to."
+ "⚠️ 批量打探：一次谈 ${n} 个人 = ${c} 资源（一对一只要 1，价格非线性上涨）。省下的是回合，多花的是资源；被同一场约谈卷进来的人，彼此也会熟络一分。每个人的信息无论谈几个都挖得一样深。": "⚠️ Batch gathering: ${n} people in one sitting = ${c} resources (one-on-one costs just 1; the price rises non-linearly). What you save is rounds; what you spend is resources — and people swept into the same interview warm up to each other. Everyone's information comes out equally deep however many you talk to.",
+ "还没认同。对他喊话打四折，放着不管每回合都会冷回去。": "Not convinced yet. Broadcasts reach him at 40%, and he cools back down every round if left alone.",
+ "听说了，但没被说服。喊话打七折，放着不管每回合都会冷一点。": "Heard about it, but not persuaded. Broadcasts reach him at 70%; left alone, he cools a little every round.",
+ "有点动心，但还没点头。喊话全额有效，可放着不管还是会冷。": "Tempted, but not committed. Broadcasts work at full strength, but he still cools if left alone.",
+ "越冷回得越快": "The colder he is, the faster he cools"
 }
