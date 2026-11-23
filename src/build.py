@@ -123,9 +123,13 @@ css = '''
       html[lang="en"] #tabsBar .btn{white-space:normal;font-size:10px;line-height:1.15}
     }
     html[lang="en"] #endingBody table th,html[lang="en"] #endingBody table td{white-space:normal}
-    /* v113: Georgia reads smaller than Noto Sans at the same px — uniform 5% scale-up.
-       zoom scales containers along with text, so no reflow/overflow regressions. */
-    html[lang="en"] body{zoom:1.05}
+    /* v114：Georgia reads smaller than Noto Sans — bump base sizes directly.
+       (v113 used body{zoom:1.05}; Chromium repaints the whole zoomed layer on every
+       hover transition frame → severe hover jank on the decision screen. Reverted.) */
+    html[lang="en"] body{font-size:17px}
+    html[lang="en"] .small{font-size:14px}
+    html[lang="en"] .btn{font-size:15px}
+    html[lang="en"] .target{font-size:14px}
     html[lang="en"] .impact-table th{white-space:normal}
     html[lang="en"] .lb-table th{white-space:normal}
     html[lang="en"] .modal-links button{white-space:normal}
