@@ -103,12 +103,13 @@ if not lb_base:
 print('leaderboard backend:', lb_base or '(none — module stays inert)', '| token:', bool(lb_qs))
 
 css = '''
-    /* English mode: Book Antiqua (system serif stack — Book Antiqua ships with MS Office,
-       Palatino Linotype with Windows, Palatino/Georgia as fallbacks); Chinese mode keeps Noto Sans SC */
-    html[lang="en"] body{font-family:'Book Antiqua','Palatino Linotype',Palatino,Georgia,serif;
+    /* English mode: Georgia-first screen-optimized serif stack (v112 — Book Antiqua/Palatino
+       are print faces and read thin on screen; Georgia ships with Windows/macOS);
+       Chinese mode keeps Noto Sans SC */
+    html[lang="en"] body{font-family:Georgia,'Book Antiqua','Palatino Linotype',Palatino,serif;
       letter-spacing:.01em;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     html[lang="en"] .lb-panel,html[lang="en"] #lbBtn,html[lang="en"] #lbToast{
-      font-family:'Book Antiqua','Palatino Linotype',Palatino,Georgia,serif}
+      font-family:Georgia,'Book Antiqua','Palatino Linotype',Palatino,serif}
     /* English mode: undo CJK compressions — the negative letter-spacing rules were tuned
        for dense Chinese glyphs and squeeze Latin text together */
     html[lang="en"] *{letter-spacing:normal}
