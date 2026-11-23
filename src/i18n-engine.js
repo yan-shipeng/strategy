@@ -410,7 +410,9 @@ function ensureButton(){
   btn.textContent = (lang === 'en') ? '中文' : 'EN';
   btn.setAttribute('aria-label', 'Switch language / 切换语言');
   btn.addEventListener('click', () => applyLang(lang === 'en' ? 'zh' : 'en'));
-  document.body.appendChild(btn);
+  /* v119：不浮动——放进顶栏操作区（没有则退回 body） */
+  const host = document.getElementById('topbarActions');
+  (host || document.body).appendChild(btn);
 }
 
 /* ── public api ────────────────────────────────────────────────── */

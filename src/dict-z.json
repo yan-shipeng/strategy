@@ -71,7 +71,7 @@
  "点击任意处继续": "Click anywhere to continue",
  "突破": "Breakthrough",
  "挫败": "Setback",
- "完全配合人数": "Full adoption",
+ "完全配合人数": "Adoption",
  "你自己": "Yourself",
  "✅ 完全配合": "✅ Fully committed",
  "🚀 差一步就完全配合": "🚀 One step from full commitment",
@@ -452,5 +452,7 @@
  "这个人的汇报线不在你的调整权限内。": "This person's reporting line is outside your authority to change.",
  "总部 CEO / CFO 的汇报线在总部，区域总经理已直接向你汇报——都不是你能动的。": "The HQ CEO / CFO report at HQ, and the regional GM already reports directly to you — none of these are yours to move.",
  "进入决策": "Enter Decision",
- "进入决策 →": "Enter Decision →"
+ "进入决策 →": "Enter Decision →",
+ "剩余资源": "Resources",
+ "完全配合率": "Adoption"
 }
