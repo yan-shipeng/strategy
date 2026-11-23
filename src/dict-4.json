@@ -137,7 +137,6 @@
  "回合。\\n\\n确定中途放弃，重新开始新的一局吗？": "rounds.\\n\\nSure you want to quit mid-game and start a new run?",
  "确定中途放弃，重新开始新的一局吗？": "Sure you want to quit mid-game and start a new run?",
  "🔄 重新开始一局": "🔄 Start a New Game",
- "🏁 局终结算：": "🏁 Final Tally: ",
  "📜 完整决策日志（共 ${state.history.length} 个回合）": "📜 Full Decision Log (${state.history.length} rounds in total)",
  "完整决策日志": "Full Decision Log",
  "个回合": "rounds",

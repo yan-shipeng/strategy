@@ -103,12 +103,28 @@ if not lb_base:
 print('leaderboard backend:', lb_base or '(none — module stays inert)', '| token:', bool(lb_qs))
 
 css = '''
-    /* English mode: Inter (loaded from Google Fonts, falls back to system Latin stack
-       when offline); Chinese mode keeps Noto Sans SC */
-    html[lang="en"] body{font-family:'Inter','Segoe UI','Helvetica Neue',Arial,sans-serif;
-      letter-spacing:.15px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+    /* English mode: Book Antiqua (system serif stack — Book Antiqua ships with MS Office,
+       Palatino Linotype with Windows, Palatino/Georgia as fallbacks); Chinese mode keeps Noto Sans SC */
+    html[lang="en"] body{font-family:'Book Antiqua','Palatino Linotype',Palatino,Georgia,serif;
+      letter-spacing:.01em;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     html[lang="en"] .lb-panel,html[lang="en"] #lbBtn,html[lang="en"] #lbToast{
-      font-family:'Inter','Segoe UI','Helvetica Neue',Arial,sans-serif}
+      font-family:'Book Antiqua','Palatino Linotype',Palatino,Georgia,serif}
+    /* English mode: undo CJK compressions — the negative letter-spacing rules were tuned
+       for dense Chinese glyphs and squeeze Latin text together */
+    html[lang="en"] *{letter-spacing:normal}
+    /* English mode: Latin words must wrap whole — break-all shatters words mid-word */
+    html[lang="en"] body{word-break:normal}
+    html[lang="en"] .tp-targets{word-break:normal;overflow-wrap:break-word}
+    /* English mode layout hardening — Latin text runs longer and wraps by words,
+       so CJK-era nowrap/ellipsis rules truncate or cram it */
+    @media (max-width:820px){
+      html[lang="en"] .title{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.2}
+      html[lang="en"] #tabsBar .btn{white-space:normal;font-size:10px;line-height:1.15}
+    }
+    html[lang="en"] #endingBody table th,html[lang="en"] #endingBody table td{white-space:normal}
+    html[lang="en"] .impact-table th{white-space:normal}
+    html[lang="en"] .lb-table th{white-space:normal}
+    html[lang="en"] .modal-links button{white-space:normal}
     /* English mode: translate CSS pseudo-element labels in the result table (DOM engine can't reach CSS content) */
     html[lang="en"] .impact-table td:nth-child(3)::before{content:'Buy-in '}
     html[lang="en"] .impact-table td:nth-child(5)::before{content:'Why: '}
@@ -155,12 +171,17 @@ data_js = 'window.__I18N_DICT__ = ' + json.dumps(final, ensure_ascii=False) + ';
 data_js += 'Object.assign(window.__ZH_EN_SRC__||{}, window.__I18N_DICT__);\n'
 # engine references __ZH_EN_SRC__ created inside its own scope; simplest: load dict first, engine reads it
 inject = '<style>' + css + '</style>\n'
-inject += '<script>\n/* i18n dictionary */\n' + data_js + '</script>\n'
+inject += '<script>\n/* i18n dictionary */\n'
+inject += 'window.__I18N_EXACT_ONLY__ = ' + json.dumps([
+  '姓名','角色','版本','导出时间','回合数','完全配合人数','达标线','之后的选择','本局总积分','还没决定',
+  '非常成功','超额渗透','阶段达标','部分转化','未能达标'
+]) + ';\n'
+inject += data_js + '</script>\n'
 # patch engine: make it use the preloaded dict
 engine = engine.replace(
     "const ZH_EN = Object.create(null);           // exact: full Chinese string -> English",
     "const ZH_EN = window.__I18N_DICT__ || Object.create(null); // exact: full Chinese string -> English")
-inject += '<script>\n' + engine + '\n</script>\n'
+inject += '<script id="i18nEngine">\n' + engine + '\n</script>\n'
 # leaderboard: config first, then the module
 inject += '<script>\n/* leaderboard backend config */\n'
 inject += 'window.__LEADERBOARD_API_BASE__ = ' + json.dumps(lb_base) + ';\n'
@@ -169,9 +190,7 @@ inject += 'window.__LEADERBOARD_COURSE_ID__ = "strategy-cn";\n'
 inject += '</script>\n'
 inject += '<script>\n' + leaderboard + '\n</script>\n'
 
-font_link = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
-             '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-             '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">')
+font_link = ''
 out = src.replace('</head>', font_link + '\n</head>')
 out = out.replace('</body>', inject + '</body>')
 open('game_i18n.html', 'w', encoding='utf-8').write(out)

@@ -6459,9 +6459,24 @@ function runTurn(){
 function exportGamePdf(){
   const role = (typeof ROLES!=='undefined' && ROLES[state.roleId]) ? ROLES[state.roleId] : null;
   const roleName = role ? role.name : state.roleId;
+  // v104：PDF 报告跟随界面语言——把词典和翻译引擎一并带进报告页，
+  // 英文模式下整份报告由引擎自动转英（与主页面同一套翻译，不维护两份文案）
+  const pdfLang = ((window.I18N && I18N.lang) || 'zh') === 'en' ? 'en' : 'zh-CN';
+  const locale = pdfLang === 'en' ? 'en-GB' : 'zh-CN';
+  let pdfI18nHead = '';
+  try{
+    if(pdfLang === 'en' && window.__I18N_DICT__){
+      const engTag = document.getElementById('i18nEngine');
+      if(engTag){
+        pdfI18nHead =
+          '<script>window.__I18N_DICT__=' + JSON.stringify(window.__I18N_DICT__).replace(/</g,'\\u003c') + ';<\/script>' +
+          '<script id="i18nEngine">' + engTag.textContent.replace(/<\/script/gi,'<\\/script') + '<\/script>';
+      }
+    }
+  }catch(_){}
   const date = new Date();
-  const dateStr = date.toLocaleDateString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit'}) + ' ' +
-    date.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+  const dateStr = date.toLocaleDateString(locale, {year:'numeric',month:'2-digit',day:'2-digit'}) + ' ' +
+    date.toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'});
 
   // 结局信息
   let endingBlock = '';
@@ -6473,7 +6488,7 @@ function exportGamePdf(){
       const d = debrief();
       if(d && d.items && d.items.length){
         diagBlock = '<h3>🎓 全局诊断：你的操盘模式</h3><ul style="margin:6px 0 0 20px;padding:0;font-size:12.5px;line-height:1.7">'+
-          d.items.map(t=>`<li><b>［${t.tag}］</b>${t.t}</li>`).join('')+'</ul>';
+          d.items.map(t=>`<li><b>[${t.tag}]</b>${t.t}</li>`).join('')+'</ul>';
         if(d.oneThing){
           diagBlock += `<p style="margin-top:10px;padding:8px 12px;background:#eef7f5;border-left:3px solid #0f766e;font-size:12.5px"><b>如果只改一件事：</b>${d.oneThing.tag}——${d.oneThing.t.split('。')[0]}。</p>`;
         } else if(d.challenge){
@@ -6511,7 +6526,7 @@ function exportGamePdf(){
         <tr><th>可信度</th><td>${state.credibility}</td><th>压力</th><td>${state.pressure}</td></tr>
         <tr><th>剩余资源</th><td>${state.resources}/${typeof TOTAL_RESOURCES!=='undefined'?TOTAL_RESOURCES:32}</td><th>回合数</th><td>${Math.max(1, state.round-1)}</td></tr>
         ${scBlock?`<tr><th>本局总积分</th><td colspan="3"><b>${scBlock.total} / 100 分</b>（${scBlock.grade.k} · ${scBlock.grade.label}）　成果 ${scBlock.parts.outcome} ＋ 效率 ${scBlock.parts.efficiency} ＋ 节奏 ${scBlock.parts.pacing} ＋ 组织 ${scBlock.parts.org} ＋ 里程碑 ${scBlock.parts.milestone}</td></tr>`:''}
-        ${state.passReached?`<tr><th>达标线</th><td>第 ${state.passRound} 回合过 50%（节奏分定格 ${scBlock?scBlock.parts.pacing:'-'}/${SCORE_RULES.pacingMax}）</td><th>之后的选择</th><td>${state.passChoice==='push'?`继续推进 ${state.passFatigue||0} 回合（深推末段动作效果 ${postPassMulText(postPassMul())}）`:state.passChoice==='stop'?'收工结算':'未决'}</td></tr>`:''}
+        ${state.passReached?`<tr><th>达标线</th><td>第 ${state.passRound} 回合过 50%（节奏分定格 ${scBlock?scBlock.parts.pacing:'-'}/${SCORE_RULES.pacingMax}）</td><th>之后的选择</th><td>${state.passChoice==='push'?`继续推进 ${state.passFatigue||0} 回合（深推末段动作效果 ${postPassMulText(postPassMul())}）`:state.passChoice==='stop'?'收工结算':'还没决定'}</td></tr>`:''}
       </table>
     </section>`;
 
@@ -6567,14 +6582,15 @@ function exportGamePdf(){
   // 这里所有 HTML 关闭标签都写成 `<\/tag>`（通过反斜杠转义）——JS 字符串中这个转义等同于
   // `</tag>`，但在源码字符流层面避开了 `<\/` 序列，所以 HTML 解析器不会把它们当此主脚本结束。
   const html = `<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="${pdfLang}">
 <head>
 <meta charset="utf-8">
+${pdfI18nHead}
 <title>战略落地模拟 · PDF 报告 · ${escapeHtml(state.learnerName||'用户')}<\/title>
 <style>
   @page { size: A4; margin: 14mm 12mm; }
   *{box-sizing:border-box}
-  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;color:#222;line-height:1.6;margin:0;padding:0;background:#fff}
+  body{font-family:${pdfLang==='en'?"'Book Antiqua','Palatino Linotype',Palatino,Georgia,serif":"-apple-system,\"PingFang SC\",\"Microsoft YaHei\",\"Noto Sans SC\",sans-serif"};color:#222;line-height:1.6;margin:0;padding:0;background:#fff}
   .cover{padding:10mm 6mm 6mm;border-bottom:3px solid #0f766e;margin-bottom:8mm}
   .cover h1{margin:0 0 8px 0;font-size:22pt;color:#0f766e}
   .cover .meta{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:11pt;margin-top:10px}
@@ -6616,7 +6632,7 @@ function exportGamePdf(){
   <div class="print-hint">🖨️ 在弹出的打印窗口中选择「另存为 PDF」
     <button onclick="window.print()">重新打印<\/button><\/div>
   <div class="cover">
-    <h1>🎫 中国企业出海变革模拟 · PDF 报告<\/h1>
+    <h1>🎫 战略落地模拟 · PDF 报告<\/h1>
     <dl class="meta">
       <dt>姓名<\/dt><dd>${escapeHtml(state.learnerName||'（未填写）')}<\/dd>
       <dt>角色<\/dt><dd>${escapeHtml(roleName)}<\/dd>
@@ -6631,6 +6647,7 @@ function exportGamePdf(){
   ${logBlock}
   ${unusedBlock}
   <div class="section" style="text-align:center;color:#999;font-size:9pt;padding-top:10mm">—— 报告末 ——<\/div>
+  <script>document.addEventListener('DOMContentLoaded',function(){try{var b=document.getElementById('langToggleBtn');if(b)b.remove();if(document.documentElement.lang==='en'&&window.I18N&&I18N.lang!=='en')I18N.set('en');}catch(e){}});<\/script>
 <\/body>
 <\/html>`;
 

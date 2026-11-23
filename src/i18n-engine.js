@@ -145,11 +145,16 @@ function rebuildKeys(){
   PATTERNS.sort((a,b)=> b.litLen - a.litLen);
 }
 let segRe = null;
+/* keys listed in window.__I18N_EXACT_ONLY__ stay exact-only: they translate a
+   full text node that equals them, but never substring-match inside longer
+   prose (short UI labels like table headers would otherwise half-translate
+   sentences that have no full entry). Populated by the host page before boot. */
+const EXACT_ONLY = new Set(window.__I18N_EXACT_ONLY__ || []);
 function rebuildRe(){
   /* single-char CJK punctuation joins segmentation (safe: full-width marks only
      occur in Chinese prose); 1-char word keys like 你 stay exact-only */
   const PUNCT1 = new Set(['，','。','：','、','「','」','；','！','？','（','）','你']);
-  const parts = KEYS.filter(k=>k.length>=2 || PUNCT1.has(k)).map(escRe);
+  const parts = KEYS.filter(k=> !EXACT_ONLY.has(k) && (k.length>=2 || PUNCT1.has(k))).map(escRe);
   segRe = parts.length ? new RegExp(parts.join('|'),'g') : null;
   window.__DBG_KEYS = KEYS; window.__DBG_SEGRE = segRe ? segRe.source.length : -1;
   window.__DBG_HAS = k => KEYS.includes(k);
