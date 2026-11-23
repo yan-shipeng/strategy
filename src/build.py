@@ -123,6 +123,9 @@ css = '''
       html[lang="en"] #tabsBar .btn{white-space:normal;font-size:10px;line-height:1.15}
     }
     html[lang="en"] #endingBody table th,html[lang="en"] #endingBody table td{white-space:normal}
+    /* v113: Georgia reads smaller than Noto Sans at the same px — uniform 5% scale-up.
+       zoom scales containers along with text, so no reflow/overflow regressions. */
+    html[lang="en"] body{zoom:1.05}
     html[lang="en"] .impact-table th{white-space:normal}
     html[lang="en"] .lb-table th{white-space:normal}
     html[lang="en"] .modal-links button{white-space:normal}

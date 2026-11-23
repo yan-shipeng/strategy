@@ -4962,7 +4962,8 @@ function peopleRecap(){
 function unusedActionsList(){
   const unused = ACTIONS.filter(a=>!state.usedActions.has(a.id));
   if(!unused.length) return '<div class="small muted">本局你用过了所有动作——非常全面的操盘手。</div>';
-  return `<ul style="margin:8px 0 0 20px;padding:0">${unused.map(a=>`<li><strong>${a.label}</strong>（${a.type}）：${a.desc}</li>`).join('')}</ul>`;
+  /* v113：只列名字，不展开细节——结局页太长，细节留给动作卡本身 */
+  return `<div style="margin:8px 0 0;display:flex;flex-wrap:wrap;gap:6px">${unused.map(a=>`<span class="chip">${a.label}</span>`).join('')}</div>`;
 }
 
 /* =========================================================
