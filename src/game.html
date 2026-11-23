@@ -2581,14 +2581,15 @@ const ACTIONS=[
      拆开之后：打探只给信息（1 分），劝说只给推力（不吃偏好）。
      打探的价值不再是「解锁劝说」，而是「让你发现这个人该用哪把工具」。 */
   {id:'recon',label:'信息打探',weeks:1,cooldown:1,need:3,min:1,costFn:k=>k*(k+1)/2,type:'对话',reqCred:3,disrupt:0,adkar:'AW',
-   desc:'坐下来问，不劝。摸清他到底在担心什么、吃哪一套、跟谁真正走得近。一次可以谈 1–3 个人：谈得越多越省回合，但资源按 1 / 3 / 6 非线性上涨——三个人凑一场，和三个人分开深谈，花的时间一样多，听到的深度完全不同。无论几个人，都能解锁动作偏好和当前档位；只有一对一，才挖得到隐藏目标和台面下的关系。它几乎不推人：一次只值 1 分。选多个人的时候注意看价格——多人打探是批量摸底，不是折扣团购。被同一场约谈卷进来的人，彼此也会熟络一分。',
+   desc:'坐下来问，不劝。摸清他到底在担心什么、吃哪一套、跟谁真正走得近。一次可以谈 1–3 个人：谈得越多越省回合，但资源按 1 / 3 / 6 非线性上涨——三个人凑一场，和三个人分开深谈，花的时间一样多。无论谈几个，每个人的动作偏好、当前档位、隐藏目标和台面下的关系都一次看清。它几乎不推人：一次只值 1 分。选多个人的时候注意看价格——多人打探是批量摸底，不是折扣团购。被同一场约谈卷进来的人，彼此也会熟络一分。',
    cooldownReason:'摸底可以频繁做，但连着找同一个人问，他会觉得你只调研不表态。',
    run(ids){
      const n=ids.length;
-     const deep = n===1;
+     /* v105：无论谈几个人，每个人的偏好、档位、隐藏目标、台面下关系都一次解锁——
+        取舍只在资源价格（1/3/6 非线性）和回合数，不在信息多少。 */
      ids.forEach(id=>{
        state.revealed[id]=true;
-       if(deep) state.deepReveal[id]=true;
+       state.deepReveal[id]=true;
      });
      /* 反复找同一个人问，他会开始烦——只摸底不表态，是最消耗信任的一种接触 */
      const overused=[];
@@ -2598,11 +2599,9 @@ const ACTIONS=[
      });
      const cost=actionCost(this,n);
      const r = affectTargets(ids, 1, '你只是听，没有推。信息拿到了，人还没动。', false, '对话');
-     r.details.unshift(`🔓 已解锁：${ids.map(i=>state.people[i].name).join('、')} 的动作偏好与当前档位（查看节点详情）。`);
-     if(deep){
-       r.details.unshift('🕯 一对一：没有旁人要顾，他把真正的顾虑说出来了——隐藏目标、台面下的关系，也一并看清。');
-     } else {
-       r.details.unshift(`👥 一次谈了 ${n} 个人（耗 ${cost} 资源）：每个人的动作偏好和当前档位都解锁了，被同一场约谈卷进来的几个人，彼此也熟络了一分。只有一点保留：人多在场，隐藏目标和台面下的关系要单独约一次才说。`);
+     r.details.unshift(`🔓 已解锁：${ids.map(i=>state.people[i].name).join('、')} 的动作偏好、当前档位与隐藏目标（查看节点详情）。`);
+     if(n>=2){
+       r.details.unshift(`👥 一次谈了 ${n} 个人（耗 ${cost} 资源）：每个人的信息都挖齐了，被同一场约谈卷进来的几个人，彼此也熟络了一分。`);
      }
      if(overused.length){
        state.credibility=Math.max(0,state.credibility-1);
@@ -3889,7 +3888,7 @@ function renderDetail(id, boxId){
     const goalHtml = p.hidden_goal
       ? (_deep
           ? `<strong style="color:var(--s3)">💭 隐藏目标：</strong>${p.hidden_goal}`
-          : `<div style="color:var(--muted);margin-bottom:6px">🔒 隐藏目标：还没摸到——两个人一起谈，他只说了愿意公开的那部分。一次只打探一个人，才问得出来。</div>`)
+          : `<div style="color:var(--muted);margin-bottom:6px">🔒 隐藏目标：还没摸清——做一次「信息打探」就能问出来，谈几个人都行。</div>`)
       : '';
     // pm 没有偏好表，也没有隐藏目标——跳过
     if(p.hidden_goal || prefRows){
@@ -3900,7 +3899,7 @@ function renderDetail(id, boxId){
     }
   } else if(id!=='pm') {
     hiddenSection = `<div class="small" style="margin-top:10px;padding:8px;background:rgba(255,255,255,.04);border-radius:8px;border-left:3px solid var(--muted);color:var(--muted)">
-      🔒 隐藏目标与动作偏好：未知。先做一次「信息打探」——谈过就知道偏好；隐藏目标要单独约一次才挖得到。
+      🔒 隐藏目标与动作偏好：未知。做一次「信息打探」就能全部摸清——谈几个人都行。
     </div>`;
   }
   // v26：合作信任进度（没到 40 的先显示进度条数值）
@@ -4458,7 +4457,7 @@ function buildActionCard(a, idx){
         if(a.id!=='recon' || !state.selectedTargets || state.selectedTargets.length<2) return '';
         const n=state.selectedTargets.length;
         const c=actionCost(a,n);
-        return `<div class="sit-line warn" style="margin:-4px 0 10px;font-size:11.5px">⚠️ 批量打探：一次谈 ${n} 个人 = ${c} 资源（一对一只要 1，价格非线性上涨）。省下的是回合，多花的是资源；被同一场约谈卷进来的人，彼此也会熟络一分。注意：只有一对一才挖得到隐藏目标和台面下的关系。</div>`;
+        return `<div class="sit-line warn" style="margin:-4px 0 10px;font-size:11.5px">⚠️ 批量打探：一次谈 ${n} 个人 = ${c} 资源（一对一只要 1，价格非线性上涨）。省下的是回合，多花的是资源；被同一场约谈卷进来的人，彼此也会熟络一分。每个人的信息无论谈几个都挖得一样深。</div>`;
       })()}
       ${(()=>{ // v47：把 ❄ 的含义就地解释，别让学生猜
         const cold=Object.keys(state.people).filter(id=>id!=='pm' && state.people[id].status<2);
