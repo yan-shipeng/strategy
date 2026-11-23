@@ -450,5 +450,7 @@
  "🏛 调整范围：总部 CEO / CFO 的汇报线不在你的权限内；区域总经理已经直接向你汇报，无需调整。": "🏛 Scope: the HQ CEO's / CFO's reporting lines are outside your authority; the regional GM already reports directly to you — no adjustment needed.",
  "总部 CEO / CFO 的汇报线不在你的权限内；区域总经理已经直接向你汇报。": "The HQ CEO / CFO reporting lines are outside your authority; the regional GM already reports directly to you.",
  "这个人的汇报线不在你的调整权限内。": "This person's reporting line is outside your authority to change.",
- "总部 CEO / CFO 的汇报线在总部，区域总经理已直接向你汇报——都不是你能动的。": "The HQ CEO / CFO report at HQ, and the regional GM already reports directly to you — none of these are yours to move."
+ "总部 CEO / CFO 的汇报线在总部，区域总经理已直接向你汇报——都不是你能动的。": "The HQ CEO / CFO report at HQ, and the regional GM already reports directly to you — none of these are yours to move.",
+ "进入决策": "Enter Decision",
+ "进入决策 →": "Enter Decision →"
 }

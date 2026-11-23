@@ -614,7 +614,7 @@
     #swipeHint{display:none!important}
 
     /* ── 决策页：动作列表优先，网络图可折叠 ── */
-    body.sim-active .app{padding-bottom:calc(var(--tabbar-h) + 92px + env(safe-area-inset-bottom,0px))}
+    body.sim-active .app{padding-bottom:calc(var(--tabbar-h) + 78px + env(safe-area-inset-bottom,0px))}
     /* v115：1fr 轨道的最小宽度是 auto，长内容（人物介绍里的长词/nowrap 标签）会把轨道
        撑出屏幕——minmax(0,1fr) 强制轨道不超过容器 */
     #screen-decision > div[data-decision-grid]{gap:12px!important;grid-template-columns:minmax(0,1fr)!important}
@@ -648,11 +648,11 @@
     }
     /* v62：手机端按钮居中占满一行，提示在上方一行居中 */
     /* v64：提示与按钮贴紧，中间不留缝 */
+    /* v118：再紧凑——提示行藏起来（按钮文案本身就在说该做什么），只留徽章+按钮 */
     .decision-footer-inner{gap:1px!important}
-    .decision-footer #runBtn{height:40px;width:100%;min-width:0;font-size:14px;border-radius:11px}
+    .decision-footer #runBtn{height:38px;width:100%;min-width:0;font-size:14px;border-radius:11px}
     .decision-footer .fb-chip{font-size:11px;padding:2px 8px}
-    /* v41：预判输入框已删；平时不占位，只在未选动作或有警告时冒一行小字 */
-    .decision-footer .hint-strip{font-size:10.5px;line-height:1.25;margin-bottom:0}
+    .decision-footer .hint-strip{display:none!important}
     .predict-box-footer{padding-right:0}
 
     /* ── 网络页：v61 起由全局推进栏接管，旧 CTA 不再显示 ── */
@@ -663,7 +663,7 @@
     .modal{padding:0;align-items:stretch}
     .modal-card{
       max-width:none;width:100%;max-height:100dvh;height:100dvh;
-      border-radius:0;padding:16px 14px calc(var(--tabbar-h) + 76px + env(safe-area-inset-bottom,0px));
+      border-radius:0;padding:16px 14px calc(var(--tabbar-h) + 64px + env(safe-area-inset-bottom,0px));
       display:flex;flex-direction:column;
     }
     #impactBody{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
@@ -729,7 +729,7 @@
   <div class="tabs" id="tabsBar" style="display:none">
     <button class="btn active" data-screen="task">任务</button>
     <button class="btn" data-screen="network">社会网络</button>
-    <button class="btn" data-screen="decision">进入本轮决策</button>
+    <button class="btn" data-screen="decision">进入决策</button>
     <button class="btn" data-screen="log">回合日志</button>
     <button class="btn" id="endingTabBtn" style="display:none;background:#fffbf0;border-color:#e8c884;color:#9a6510;font-weight:600">📜 查看结局</button>
   </div>
@@ -4698,7 +4698,7 @@ function updateFlowBar(){
   }
   /* ③ 非决策页：按钮负责把人送回决策 */
   if(scr==='task'){ btn.disabled=false; btn.textContent='先看社会网络 →'; say('第一步：认识这 12 个人，再决定先动谁'); return; }
-  if(scr==='network'){ btn.disabled=false; btn.textContent=`进入第 ${state.round} 回合决策 →`; say('看清人，再动手'); return; }
+  if(scr==='network'){ btn.disabled=false; btn.textContent='进入决策 →'; say('看清人，再动手'); return; }
   if(scr==='log'){ btn.disabled=false; btn.textContent='回到决策 →'; say('复盘完就继续'); return; }
   /* ④ 决策页：三步 */
   if(state.selectedAction===null){
