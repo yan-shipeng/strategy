@@ -2831,12 +2831,12 @@ const ACTIONS=[
         '💡 制度是放大器，不是发动机：先让三四个人真的走通，同一纸文件的分量会完全不同。'
       );
       state.ruleAnchor = 4;
-      r.details.push('🏛 制度锚定：接下来 4 个回合，已经动起来的人不会自然回冷——这是制度第一次替你盯着。');
+      r.details.push('🏛 制度开始生效：接下来 4 个回合，已经动起来的人不会自然回冷——这是制度第一次替你盯着，变革有一部分不再靠你亲自推。');
       return r;
     }
     state.ruleAnchor = 4;
     const r2 = affectAll(12,'奖惩制度开始产生效果。这个制度改变突破了后期的阈值锁限制，成为终极推动力。','规则');
-    r2.details.push('🏛 制度锚定：接下来 4 个回合，已经动起来的人不会自然回冷。制度开始替你盯着，而不是靠你天天去谈。');
+    r2.details.push('🏛 制度开始生效：接下来 4 个回合，已经动起来的人不会自然回冷。这套机制开始替你盯着——而不是靠你天天去谈。');
     return r2;
   }},
   {id:'reorg',label:'调整汇报关系',weeks:2,cooldown:6,need:1,type:'规则',reqCred:6,disrupt:2,adkar:'RE',
@@ -2844,6 +2844,10 @@ const ACTIONS=[
    cooldownReason:'动组织结构是大事，一年内反复调整会让人觉得你在乱折腾，反而摧毁可信度。',
    run(ids){
      const id=ids[0]; const p=state.people[id];
+     if(!p || ['ceo','cfo','region','pm'].includes(id)){
+       return {story:'这个人的汇报线不在你的调整权限内。',
+         details:['总部 CEO / CFO 的汇报线在总部，区域总经理已直接向你汇报——都不是你能动的。']};
+     }
      const oldBossId=p.reportsTo; const oldBoss=oldBossId?state.people[oldBossId]:null;
      const cands=['region','ops','pm'].filter(x=>x!==id&&state.people[x]&&x!==oldBossId);
      if(!cands.length){
@@ -2886,7 +2890,7 @@ const ACTIONS=[
            : `📈 ${p.name} 动了——具体到哪一格，得谈过才知道。${note}`,
          `⚠️ 动组织结构的代价：压力 +2（现 ${state.pressure}），这类动作短期内不宜重复。`,
          `💡 网络图上这条线已经改道——信息以后沿着新的汇报线流动。再推动${q.name}时，${p.name}受到的影响会更直接。`,
-         `🏛 制度锚定：接下来 4 个回合，已经动起来的人不会自然回冷。`
+         `🏛 制度开始生效：接下来 4 个回合，已经动起来的人不会自然回冷。`
        ]
      };
    }},
@@ -4336,15 +4340,15 @@ function renderNetView(){
    ========================================================= */
 function renderActions(){
   const box=el('actionList'); box.innerHTML='';
-  /* v91：制度锚定提示——只在窗口期内出现，提醒学生「这段时间制度在替你盯着」 */
+  /* v91：制度锚定提示——只在窗口期内出现，用学生能看懂的话说清「这段时间制度在替你盯着」 */
   if(state.ruleAnchor>0){
     const anc=document.createElement('div');
     anc.className='log-item'; anc.id='anchorBanner';
     anc.style.cssText='margin-bottom:10px;border-left:3px solid #7fd1a8;background:rgba(127,209,168,.08)';
-    anc.innerHTML='🏛 <strong>制度锚定还剩 '+state.ruleAnchor+' 个回合</strong>'+
+    anc.innerHTML='🏛 <strong>新制度生效中 · 还剩 '+state.ruleAnchor+' 回合</strong>'+
       '<div class="small" style="margin-top:4px;line-height:1.65;color:var(--text)">'+
-      '奖惩、汇报关系已经把「做了有好处、不做有成本」写进流程——这段窗口里，<b>已经动起来的人不会自然回冷</b>。'+
-      '但还没开始的人照样在冷：制度保得住已经启动的，保不住还没启动的。</div>';
+      '奖惩和汇报关系已经把「做了有好处、不做有代价」写进流程。这段窗口里，<b>已经动起来的人不会因为没人盯就冷回去</b>。'+
+      '但还没开始的人照样在观望——制度保得住已经启动的，拉不动还没启动的。这正是变革最后一步的意义：把人推人，变成机制推人。</div>';
     box.appendChild(anc);
   }
   // v27：当前局面一行提示（只在有风险时出现）
@@ -4463,10 +4467,11 @@ function buildActionCard(a, idx){
         const cold=Object.keys(state.people).filter(id=>id!=='pm' && state.people[id].status<2);
         return cold.length ? `<div class="small" style="margin:-2px 0 10px;font-size:11.5px;color:#8fb9d4">❄ 标记的人还停在「初步理解」：这一轮不管他，每回合会自己往回掉；推到「有限认同」才站得住。</div>` : '';
       })()}
+      ${a.id==='reorg'?`<div class="small" style="margin:-2px 0 10px;font-size:11.5px;color:var(--muted)">🏛 调整范围：总部 CEO / CFO 的汇报线不在你的权限内；区域总经理已经直接向你汇报，无需调整。</div>`:''}
       <div class="targets">${(()=>{ 
         /* v62：不再预演"这一下能推多少"。选人时只给观察得到的东西：
            他现在的状态、分数、你访谈出来的偏好方向（▲/▼，不给倍数）。 */
-        return Object.entries(state.people).filter(([id])=>id!=='pm').map(([id,p])=>{
+        return Object.entries(state.people).filter(([id])=>id!=='pm' && !(a.id==='reorg'&&['ceo','cfo','region'].includes(id))).map(([id,p])=>{
         const soft = state.softened[id] ? '<span title="扩散圈" style="color:var(--success);font-weight:700">⚡</span>' : '';
         const bridge = isBridge(id) ? '<span title="桥梁节点" style="color:var(--primary)">🌉</span>' : '';
         /* v62：访谈解锁的是"他吃哪一套"这个判断，不是倍数。
@@ -5042,9 +5047,14 @@ function debrief(){
 
   // 3. 是否用过制度杠杆
   const usedInst = ['incentive','reorg'].filter(id=>H.some(h=>h.actionId===id));
+  const instLabels = usedInst.map(id=>((ACTIONS.find(a=>a.id===id)||{}).label)||id);
+  const anchorUsed = H.some(h=>(h.details||[]).some(x=>x.indexOf('制度开始生效')>=0));
   if(!usedInst.length && conv<Math.ceil(total*0.5)){
     out.push({tag:'没有动制度', k:'warn',
-      t:`你整局没有动过制度类动作（调整奖惩 / 调整汇报关系）。人际说服能推到 50 分，但 50→85 这一段靠说是不动的——它需要改变「做与不做的后果」。代价是压力，但没有它，最后一跳永远差一口气。`});
+      t:`你整局没有动过制度类动作（调整奖惩 / 调整汇报关系）。人际说服能推到 50 分，但 50→85 这一段靠说是不动的——它需要改变「做与不做的后果」。制度生效后的几个回合里，已经动起来的人还不会自然回冷：它既是推力，也是保险。代价是压力，但没有它，最后一跳永远差一口气。`});
+  } else if(usedInst.length && anchorUsed){
+    out.push({tag:'制度接管', k:'good',
+      t:`你在推进的后段动用了制度（${instLabels.join('、')}）。制度生效的那几个回合里，已经动起来的人不会因为没人盯就冷回去——变革从「全靠你推」变成「机制替你盯着」。这就是最后一步「固化」的意义：让新做法不再依赖你个人的注意力，你走了它还在。`});
   }
 
   // 3. 压力是否爆掉
@@ -5678,6 +5688,10 @@ function toggleTarget(id){
   if(id==='pm') return;   // v31：自己不是推动对象
   const a=ACTIONS[state.selectedAction];
   if(!a||a.need===0) return;
+  /* v110：调整汇报关系的可调范围不含总部 CEO / CFO（权限外）与区域总经理（已直接向玩家汇报） */
+  if(a.id==='reorg' && (id==='ceo'||id==='cfo'||id==='region')){
+    state.targetHint='总部 CEO / CFO 的汇报线不在你的权限内；区域总经理已经直接向你汇报。'; render(); return;
+  }
   const arr=state.selectedTargets;
   const pos=arr.indexOf(id);
   if(pos>=0){ arr.splice(pos,1); state.targetHint=''; if(arr.length) state.focusedNode=arr[arr.length-1]; render(); return; }
