@@ -147,6 +147,14 @@ css.textContent = [
   '.fx-n-decay{color:#9ab4c2}',
   '.fx-netcine-line{min-height:30px;font-size:21px;font-weight:800;letter-spacing:4px;color:#ffffff;'+'text-shadow:0 0 20px rgba(120,235,175,.75),0 0 42px rgba(120,235,175,.35),0 2px 3px rgba(0,0,0,.8);opacity:0}',
   '.fx-netcine-line.on{animation:fxNoteIn .45s forwards}',
+  '.fx-netcine-line.fx-n-direct{color:#ffe9a8;text-shadow:0 0 22px rgba(255,217,102,.8),0 0 46px rgba(255,217,102,.4),0 2px 3px rgba(0,0,0,.8)}',
+  '.fx-netcine-line.fx-n-spread{color:#a9f2cf;text-shadow:0 0 20px rgba(111,216,160,.75),0 0 42px rgba(111,216,160,.35),0 2px 3px rgba(0,0,0,.8)}',
+  '.fx-netcine-line.fx-n-decay{color:#b9cdd8;text-shadow:0 0 18px rgba(143,178,194,.6),0 2px 3px rgba(0,0,0,.8)}',
+  '.fx-n-direct{color:#ffd966;font-weight:800}',
+  '.fx-n-spread{color:#6fd8a0}',
+  '.fx-n-decay{color:#8fb2c2}',
+  '.fx-netcine-skip{position:fixed;right:18px;bottom:18px;z-index:2600;padding:9px 18px;border-radius:999px;'+'border:1px solid rgba(143,178,194,.45);background:rgba(10,24,33,.85);color:#cfe3ec;font:600 13.5px inherit;'+'cursor:pointer;letter-spacing:1px;transition:all .2s ease}',
+  '.fx-netcine-skip:hover{border-color:rgba(166,244,255,.8);color:#fff;background:rgba(13,139,150,.35)}',
   '@keyframes fxNoteIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}',
   /* 减少动态：全停 */
   '@media (prefers-reduced-motion: reduce){.screen.active,.kpi .num.fx-pop,.fx-glass,.fx-holo,.svg-wrapper .node,.fx-ms,.fx-wipe i{animation:none!important}}'
@@ -428,7 +436,7 @@ function netWave(entry, id, color, power){
 /* 网络推进过场：全屏播放本回合动作如何沿网络扩散（替代原全屏过场）。
    点击「执行决策」后铺满屏幕的大网络图上：能量从「你」错峰流向每个被触及的人，
    到达时冲击波 + 头顶浮出 ±N，升档金环/降档红环。 */
-const NETCINE_MS = 4600;
+const NETCINE_MS = 6400;
 function playNetCinematic(a){
   if(REDUCE || typeof state === 'undefined' || !state) return;
   const P = state.people;
@@ -443,10 +451,21 @@ function playNetCinematic(a){
     '<div class="fx-netcine-notes"></div>' +
     '<div class="fx-netcine-line"></div>';
   document.body.appendChild(d);
+  /* v124：快进按钮——课堂节奏自主掌握；点了就立刻收尾并放结果进来 */
+  const skip = document.createElement('button');
+  skip.type = 'button';
+  skip.className = 'fx-netcine-skip';
+  skip.textContent = '跳过动画 ≫';
+  skip.addEventListener('click', ev => {
+    ev.stopPropagation();
+    try{ if(typeof _cineStart !== 'undefined') _cineStart = Date.now() - (typeof CINE_MS !== 'undefined' ? CINE_MS : 1250); }catch(_){ }
+    d.style.opacity = '0';
+    setTimeout(() => { if(d.parentNode) d.remove(); }, 160);
+  });
+  d.appendChild(skip);
   const cv = d.querySelector('canvas');
   const ctx = cv.getContext('2d');
   requestAnimationFrame(() => d.classList.add('on'));
-  setTimeout(() => { d.classList.remove('on'); setTimeout(() => d.remove(), 340); }, NETCINE_MS - 320);
   const r0 = cv.getBoundingClientRect();
   const W = r0.width, H = r0.height;
   const bw = Math.min(W / VB.w, H / VB.h);
@@ -470,7 +489,7 @@ function playNetCinematic(a){
     }
     if(line){
       line.textContent = LINES[kind] || '';
-      line.classList.remove('on');
+      line.className = 'fx-netcine-line fx-n-' + kind;
       line.style.animation = 'none';
       void line.offsetWidth;
       line.style.animation = '';
@@ -481,9 +500,9 @@ function playNetCinematic(a){
   const isDirect = row => (row.reasons || []).some(t => t === '直接推动' || t === '动作直接作用' || t === '广覆盖');
   const isDecay = row => !isDirect(row) && (row.reasons || []).indexOf('自然衰减') >= 0 && (row.reasons || []).indexOf('网络扩散') < 0;
   rows.sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
-  const direct = rows.filter(isDirect).slice(0, 12);
-  const decay = rows.filter(isDecay).slice(0, 12);
-  const spread = rows.filter(r => !isDirect(r) && !isDecay(r)).slice(0, 12);
+  const direct = rows.filter(isDirect).slice(0, 8);
+  const decay = rows.filter(isDecay).slice(0, 5);
+  const spread = rows.filter(r => !isDirect(r) && !isDecay(r)).slice(0, 8);
   /* 间接推动的源头：从受影响最深、与其有关系的直接推动节点沿网络流过去 */
   const srcOf = row => {
     let best = null, bestScore = -1;
@@ -497,41 +516,45 @@ function playNetCinematic(a){
     return best || 'pm';
   };
   const STEEL = [130, 160, 175];
-  /* 三个明确错开的相位：直接 → 间接 → 冷却，各配旁白 */
-  const D0 = 400, D_STEP = 120;
-  const iBase = D0 + direct.length * D_STEP + 850;
-  const dBase = iBase + spread.length * 140 + 700;
-  /* 第一波：直接推动——从「你」直线出击 */
+  /* 三个明确错开的相位：直接 → 间接 → 冷却，各配旁白（v124：相位间隙拉长，节奏更从容） */
+  const D0 = 550, D_STEP = 175;
+  const iBase = D0 + direct.length * D_STEP + 1350;
+  const dBase = iBase + spread.length * 200 + 1250;
+  /* v124：按本轮实际规模定片长；比基准长就把揭结果的时刻同步推后，别让动画没放完就切走 */
+  const life = dBase + decay.length * 170 + 950;
+  if(life > NETCINE_MS){ try{ _cineStart += (life - NETCINE_MS); }catch(_){ } }
+  setTimeout(() => { d.classList.remove('on'); setTimeout(() => d.remove(), 340); }, life - 320);
+  /* 第一波：直接推动——从「你」直线出击（粗重、金亮、一击即中） */
   setTimeout(() => { if(d.parentNode) note('direct'); }, D0);
   direct.forEach((row, i) => {
     const delay = D0 + i * D_STEP;
-    setTimeout(() => { if(d.parentNode) pulses.push({ a:'pm', b:row.id, t:0, col:rowCol(row), power:Math.min(1.7, .7 + Math.abs(row.delta) / 8) }); }, delay);
+    setTimeout(() => { if(d.parentNode) pulses.push({ a:'pm', b:row.id, t:0, col:rowCol(row), power:Math.min(1.9, .95 + Math.abs(row.delta) / 7), kind:'direct' }); }, delay);
     setTimeout(() => {
       if(!d.parentNode) return;
       const s2 = pos(row.id);
-      if(row.revealed !== false) floats.push({ x:s2[0], y:s2[1], t:0, txt:(row.delta > 0 ? '+' : '') + row.delta, col:rowCol(row) });
-      waves.push({ x:s2[0], y:s2[1], r:5, alpha:.85, col:rowCol(row) });
-    }, delay + 760);
+      if(row.revealed !== false) floats.push({ x:s2[0], y:s2[1], t:0, txt:(row.delta > 0 ? '+' : '') + row.delta, col:rowCol(row), kind:'direct' });
+      waves.push({ x:s2[0], y:s2[1], r:5, alpha:.9, col:rowCol(row), kind:'direct' });
+    }, delay + 1050);
   });
-  /* 第二波：间接推动——沿网络边从邻居流过来 */
+  /* 第二波：间接推动——沿网络边从邻居流过来（细、柔、层层渗透） */
   if(spread.length) setTimeout(() => { if(d.parentNode) note('spread'); }, iBase);
   spread.forEach((row, i) => {
-    const delay = iBase + i * 140;
+    const delay = iBase + i * 200;
     const src = srcOf(row);
     const col = row.to > row.from ? CLR.gold : row.to < row.from ? CLR.danger
       : row.delta > 0 ? CLR.mint : row.delta < 0 ? CLR.warn : CLR.teal;
-    setTimeout(() => { if(d.parentNode && P[src]) pulses.push({ a:src, b:row.id, t:0, col:col, power:Math.min(1.2, .45 + Math.abs(row.delta) / 10) }); }, delay);
+    setTimeout(() => { if(d.parentNode && P[src]) pulses.push({ a:src, b:row.id, t:0, col:col, power:Math.min(1.05, .4 + Math.abs(row.delta) / 12), kind:'spread' }); }, delay);
     setTimeout(() => {
       if(!d.parentNode) return;
       const s2 = pos(row.id);
-      if(row.revealed !== false) floats.push({ x:s2[0], y:s2[1], t:0, txt:(row.delta > 0 ? '+' : '') + row.delta, col:col });
-      waves.push({ x:s2[0], y:s2[1], r:5, alpha:.8, col:col });
-    }, delay + 740);
+      if(row.revealed !== false) floats.push({ x:s2[0], y:s2[1], t:0, txt:(row.delta > 0 ? '+' : '') + row.delta, col:col, kind:'spread' });
+      waves.push({ x:s2[0], y:s2[1], r:5, alpha:.75, col:col, kind:'spread' });
+    }, delay + 1000);
   });
   /* 第三波：自然冷却——不发射脉冲、不点亮连线，只在节点上做向内收缩的降温环 */
   if(decay.length) setTimeout(() => { if(d.parentNode) note('decay'); }, dBase);
   decay.forEach((row, i) => {
-    const delay = dBase + i * 120;
+    const delay = dBase + i * 170;
     setTimeout(() => {
       if(!d.parentNode) return;
       const s2 = pos(row.id);
@@ -581,14 +604,23 @@ function playNetCinematic(a){
       const len = Math.max(1, Math.hypot(dx, dy));
       const nx = mx - dy / len * len * .18, ny = my + dx / len * len * .18;
       const tt = easeOut(pu.t);
+      const dir = pu.kind === 'direct';
       ctx.globalCompositeOperation = 'lighter';
+      /* v124：直接推动带一条醒目的能量束，间接推动细小如萤——形态上拉开差距 */
+      if(dir){
+        const hx = (1-tt)*(1-tt)*A[0] + 2*(1-tt)*tt*nx + tt*tt*B[0];
+        const hy = (1-tt)*(1-tt)*A[1] + 2*(1-tt)*tt*ny + tt*tt*B[1];
+        ctx.strokeStyle = rgba(pu.col, .3);
+        ctx.lineWidth = 2.6 * pu.power;
+        ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.quadraticCurveTo(nx, ny, hx, hy); ctx.stroke();
+      }
       for(let k = 3; k >= 0; k--){
         const tk = Math.max(0, tt - k * .05);
         const xk = (1-tk)*(1-tk)*A[0] + 2*(1-tk)*tk*nx + tk*tk*B[0];
         const yk = (1-tk)*(1-tk)*A[1] + 2*(1-tk)*tk*ny + tk*tk*B[1];
-        const rr = (4.5 - k) * pu.power;
+        const rr = (4.5 - k) * pu.power * (dir ? 1.25 : .8);
         const g = ctx.createRadialGradient(xk, yk, 0, xk, yk, rr * 2.4);
-        g.addColorStop(0, rgba(pu.col, .55 - k * .11));
+        g.addColorStop(0, rgba(pu.col, (dir ? .66 : .42) - k * .11));
         g.addColorStop(1, rgba(pu.col, 0));
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(xk, yk, rr * 2.4, 0, TAU); ctx.fill();
@@ -598,13 +630,15 @@ function playNetCinematic(a){
     /* 冲击波 */
     for(let i = waves.length - 1; i >= 0; i--){
       const wv = waves[i];
-      wv.r += 70 * dt; wv.alpha -= 1.2 * dt;
+      wv.r += (wv.kind === 'direct' ? 84 : 70) * dt; wv.alpha -= 1.2 * dt;
       if(wv.alpha <= .02){ waves.splice(i, 1); continue; }
       ctx.strokeStyle = rgba(wv.col, wv.alpha);
-      ctx.lineWidth = 2;
+      ctx.lineWidth = wv.kind === 'direct' ? 3 : (wv.kind === 'spread' ? 1.6 : 2);
       ctx.beginPath(); ctx.arc(wv.x, wv.y, wv.r, 0, TAU); ctx.stroke();
-      ctx.strokeStyle = rgba(wv.col, wv.alpha * .4);
-      ctx.beginPath(); ctx.arc(wv.x, wv.y, wv.r * .72, 0, TAU); ctx.stroke();
+      if(wv.kind === 'direct'){
+        ctx.strokeStyle = rgba(wv.col, wv.alpha * .4);
+        ctx.beginPath(); ctx.arc(wv.x, wv.y, wv.r * .72, 0, TAU); ctx.stroke();
+      }
     }
     /* 节点 */
     Object.keys(P).forEach(id => {
@@ -649,9 +683,11 @@ function playNetCinematic(a){
       if(f.t > life){ floats.splice(i, 1); continue; }
       const a = f.t < .12 ? f.t / .12 : 1 - (f.t - .12) / (life - .12);
       const fy = f.y - 16 - f.t * 30;
-      ctx.font = '700 15px sans-serif';
+      /* v124：直接推动的浮字最大最亮，间接细小，冷却居中 */
+      ctx.font = f.kind === 'direct' ? '800 18px sans-serif'
+        : f.kind === 'spread' ? '600 13.5px sans-serif' : '700 15px sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.shadowColor = rgba(f.col, .85 * a); ctx.shadowBlur = 9;
+      ctx.shadowColor = rgba(f.col, .85 * a); ctx.shadowBlur = f.kind === 'direct' ? 13 : 9;
       ctx.fillStyle = 'rgba(4,12,18,' + (.9 * a).toFixed(2) + ')';
       ctx.fillText(f.txt, f.x, fy);
       ctx.fillStyle = rgba(f.col, a);
