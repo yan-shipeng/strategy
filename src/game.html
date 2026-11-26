@@ -6069,7 +6069,7 @@ function hideCinematic(){
   const d = document.getElementById('cine');
   if(!d) return;
   d.style.opacity = '0';
-  setTimeout(()=>{ if(d.parentNode) d.remove(); }, 200);
+  setTimeout(()=>{ if(d.parentNode) d.remove(); }, 120);
 }
 
 function playCelebration(names, cb){
@@ -6170,13 +6170,13 @@ function revealAfter(fn, newlyConverted){
   /* v124：轮询而不是一次定死——快进按钮会把 _cineStart 拨早，揭结果的时机要跟着提前 */
   (function tick(){
     const remain = CINE_MS + 80 - (Date.now() - _cineStart);
-    if(remain > 0){ setTimeout(tick, Math.min(remain, 150)); return; }
+    if(remain > 0){ setTimeout(tick, Math.min(remain, 50)); return; }
     hideCinematic();
     const names = (newlyConverted||[]).map(id=>state.people[id]?state.people[id].name:null).filter(Boolean);
     // _cineBusy 一直锁到结果真正落地，避免动画期间再触发一次执行
     const land = ()=>{ _cineBusy = false; fn(); };
-    if(names.length) setTimeout(()=>playCelebration(names, land), 150);
-    else setTimeout(land, 150);
+    if(names.length) setTimeout(()=>playCelebration(names, land), 60);
+    else setTimeout(land, 60);
   })();
 }
 
