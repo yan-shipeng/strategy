@@ -458,7 +458,6 @@
  "网络推进": "Network Propagation",
  "你亲自出马，正面推动": "You push directly, face to face.",
  "网络替你发力，层层带动": "The network amplifies it, layer by layer.",
- "无人推动，自然回落": "No one pushes; it falls back on its own.",
  "间接推动": "Indirect push",
  "自然冷却": "Cooling down",
  "战局回放": "Replay",
@@ -468,5 +467,6 @@
  "↻ 重新播放": "↻ Replay",
  "本局总积分 · 满分 100": "Total Score · out of 100",
  "成果 · 效率 · 节奏 · 组织 · 里程碑": "Outcome · Efficiency · Pace · Organization · Milestones",
- "跳过动画 ≫": "Skip ≫"
+ "跳过动画 ≫": "Skip ≫",
+ "没被推动到，自然冷却": "Not pushed this round — cooling down"
 }

@@ -481,7 +481,7 @@ function playNetCinematic(a){
   const pulses = [], waves = [], floats = [], cooling = [];
   const notes = d.querySelector('.fx-netcine-notes');
   const line = d.querySelector('.fx-netcine-line');
-  const LINES = { direct:'你亲自出马，正面推动', spread:'网络替你发力，层层带动', decay:'无人推动，自然回落' };
+  const LINES = { direct:'你亲自出马，正面推动', spread:'网络替你发力，层层带动', decay:'没被推动到，自然冷却' };
   const note = kind => {
     if(notes){
       /* v128：中央舞台只留当前相位，旧标签清掉 */
