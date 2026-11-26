@@ -454,5 +454,18 @@
  "进入决策": "Enter Decision",
  "进入决策 →": "Enter Decision →",
  "剩余资源": "Resources",
- "完全配合率": "Adoption"
+ "完全配合率": "Adoption",
+ "网络推进": "Network Propagation",
+ "你亲自出马，正面推动": "You push directly, face to face.",
+ "网络替你发力，层层带动": "The network amplifies it, layer by layer.",
+ "无人推动，自然回落": "No one pushes; it falls back on its own.",
+ "间接推动": "Indirect push",
+ "自然冷却": "Cooling down",
+ "战局回放": "Replay",
+ "每个动作如何在关系网里扩散——亮点是被网络带动的人": "How each action rippled through the network — highlights show who was carried along.",
+ "▶ 播放": "▶ Play",
+ "⏸ 暂停": "⏸ Pause",
+ "↻ 重新播放": "↻ Replay",
+ "本局总积分 · 满分 100": "Total Score · out of 100",
+ "成果 · 效率 · 节奏 · 组织 · 里程碑": "Outcome · Efficiency · Pace · Organization · Milestones"
 }
