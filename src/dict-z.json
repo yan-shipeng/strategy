@@ -468,5 +468,6 @@
  "本局总积分 · 满分 100": "Total Score · out of 100",
  "成果 · 效率 · 节奏 · 组织 · 里程碑": "Outcome · Efficiency · Pace · Organization · Milestones",
  "跳过动画 ≫": "Skip ≫",
- "没被推动到，自然冷却": "Not pushed this round — cooling down"
+ "没被推动到，自然冷却": "Not pushed this round — cooling down",
+ "经 ${a} 的关系带动": "Pulled in through ties with ${a}"
 }
