@@ -2387,6 +2387,90 @@ const PEOPLE={
     prefs:{'规则':0.20,'政治':0.15,'沟通':-0.10}}
 };
 
+/* =========================================================
+   v134：偏好档案池——每人 3 套 {prefs, desc} 一体的"口味档案"，
+   开局随机抽一套（P0=原版，P1/P2=备选），全局总量平衡器收口：
+   以 P0 全局总量为基准，任一动作类型偏差 >±0.15 就自动换人修回，
+   保证每局难度可比、排行榜公平。role/职位/关系等字段不受影响。
+   ========================================================= */
+const PROFILE_POOLS={
+  ceo:[
+    {prefs:{'试点':0.25,'政治':0.20,'对话':-0.15,'沟通':-0.05},desc:'最近在各区域推试点，谁的报表里有试点数据谁就能进他的会。他不耐烦听一对一诉苦。'},
+    {prefs:{'试点':0.20,'规则':0.15,'对话':-0.20,'政治':-0.10},desc:'这季嘴边挂着"可控"——要流程、要章程。拿试点数据和风控条款来他听，拉关系的他烦。'},
+    {prefs:{'政治':0.25,'规则':0.10,'对话':-0.15,'试点':-0.10},desc:'用人不疑：认人就给资源，不认人说破天也没用。不信小试验，嫌慢。'}
+  ],
+  cfo:[
+    {prefs:{'规则':0.25,'试点':0.15,'沟通':-0.20,'对话':-0.10},desc:'每笔预算都要对上财务口径。喜欢把变革拆成可核算的条款，讨厌口号和拉票式沟通。'},
+    {prefs:{'规则':0.20,'试点':0.20,'培训':-0.15,'沟通':-0.10},desc:'认小步验证：花小钱先跑通比一纸大方案安心。培训费在他眼里是最难看见回报的开支。'},
+    {prefs:{'试点':0.25,'规则':0.15,'政治':-0.15,'培训':-0.10},desc:'季度 review 只看试点省下的成本表。对政治表态没兴趣——那是烧钱买好名声。'}
+  ],
+  region:[
+    {prefs:{'对话':0.25,'培训':0.15,'规则':-0.15},desc:'地方大员，最重人心稳。愿坐下来聊的他当自家人；最忌讳一纸规定动他的班底。'},
+    {prefs:{'对话':0.20,'政治':0.15,'试点':-0.20},desc:'这局要的是体面：公开场合的背书和位置比方案本身重要。试点动他盘子，他会不动声色地拖。'},
+    {prefs:{'政治':0.20,'沟通':0.15,'规则':-0.20,'试点':-0.15},desc:'老派人，讲究层级和面子。流程章程他认，那是他的秩序；谁越过他搞小动作，他记很久。'}
+  ],
+  plant:[
+    {prefs:{'培训':0.25,'试点':0.20,'规则':-0.20},desc:'车间爬上来的，认手艺认培训，眼见为实的试点也捧场。最烦办公室拍脑袋的规矩。'},
+    {prefs:{'培训':0.20,'试点':0.25,'政治':-0.15},desc:'这季迷信小范围试点——跑给他看，成了就拍板。对总部的政治秀保持距离。'},
+    {prefs:{'试点':0.25,'培训':0.15,'政治':-0.20},desc:'务实到骨子里：不看谁来讲话，只看产线上试出来的数据。烦一切耽误排产的花架子。'}
+  ],
+  hr:[
+    {prefs:{'对话':0.20,'培训':0.20,'沟通':0.15},desc:'满脑子留人：谁跟她聊员工担忧、安排成长培训她就帮谁。书面沟通回得最快。'},
+    {prefs:{'培训':0.25,'规则':0.15,'试点':-0.15},desc:'这局押宝培训——技能留住人，流程稳住心。她担心频繁试点把团队搞疲。'},
+    {prefs:{'对话':0.25,'沟通':0.20,'规则':-0.15},desc:'人事通：喜欢一对一深谈，部门氛围门儿清。听到"又要改考核"就皱眉。'}
+  ],
+  sales:[
+    {prefs:{'沟通':0.20,'对话':0.15,'规则':-0.20},desc:'一切从客户出发。帮他稳住客户关系的他感激，横空出世的规矩他先问"影响交付吗"。'},
+    {prefs:{'沟通':0.25,'试点':0.10,'规则':-0.20,'培训':-0.10},desc:'大客户压身：试点出了成果他立刻有故事可讲。最没空的是培训——销售的时间按小时算钱。'},
+    {prefs:{'试点':0.20,'沟通':0.20,'规则':-0.15,'政治':-0.10},desc:'结果导向：谁的方案能让客户点头他就站台。反感绕开客户谈内部政治。'}
+  ],
+  ops:[
+    {prefs:{'试点':0.25,'培训':0.15,'规则':-0.15,'沟通':-0.10},desc:'喜欢先跑个小试点验证流程，再给团队排培训。抵触拍脑袋的规矩和模糊传达。'},
+    {prefs:{'规则':0.15,'培训':0.20,'试点':0.15,'政治':-0.15},desc:'这局特别吃 SOP：给他清晰的流程规章，执行得滴水不漏。对花架子的政治表态免疫。'},
+    {prefs:{'培训':0.20,'规则':0.20,'政治':-0.15},desc:'管人靠两样：培训和章程。拿流程说事他配合，来作秀他打哈欠。'}
+  ],
+  engineer:[
+    {prefs:{'规则':-0.25,'对话':0.20,'培训':0.20},desc:'只认自己的技术判断。肯琢磨培训和新工具，谁拿行政命令压他当场怼回去。'},
+    {prefs:{'培训':0.25,'试点':0.20,'政治':-0.20},desc:'手里有数据说话：试点和培训他认，政治口号在他耳朵里等于噪音。'},
+    {prefs:{'试点':0.20,'对话':0.15,'政治':-0.20,'规则':-0.20},desc:'软硬不吃，除非有试验数据。章程条文和政治动员一概已读不回。'}
+  ],
+  union:[
+    {prefs:{'规则':-0.25,'培训':0.25,'沟通':0.15},desc:'护工人像护崽：培训涨本事他支持，透明沟通他点赞。听到"调整奖惩"立刻戒备。'},
+    {prefs:{'对话':0.25,'培训':0.20,'规则':-0.20,'政治':-0.15},desc:'凡事要商量：能坐下来对话的他都给面子。空头支票和政治许诺他见得多了。'},
+    {prefs:{'沟通':0.20,'对话':0.20,'规则':-0.25,'政治':-0.10},desc:'一线消息最灵：谁真心沟通他帮谁传话。规则类动作他本能警惕，先问"工人得到什么"。'}
+  ],
+  gov:[
+    {prefs:{'培训':0.25,'对话':0.20,'规则':-0.25},desc:'手艺人，学新技能最积极，谁肯唠嗑他就掏心窝。最怕"又要改考核"。'},
+    {prefs:{'对话':0.25,'培训':0.15,'试点':0.10,'规则':-0.25},desc:'要的是被当回事：有人肯听他唠，活儿就干得好。小试点愿意先试，动饭碗的规矩不行。'},
+    {prefs:{'培训':0.20,'试点':0.15,'规则':-0.25,'政治':-0.10},desc:'带教师傅：愿意参加培训，试点成了第一个拥护。对办公室政治一概不信。'}
+  ],
+  customer:[
+    {prefs:{'试点':0.25,'规则':0.15,'沟通':0.10},desc:'客户眼里只有交付：试点实证和清晰条款他最买账，沟通顺畅他就安心。'},
+    {prefs:{'沟通':0.20,'试点':0.20,'培训':-0.10},desc:'嘴上全是客户：谁能给他和客户沟通的材料就帮谁。内部培训最好别动他的销售。'},
+    {prefs:{'试点':0.20,'沟通':0.25,'政治':-0.10},desc:'大单压身：沟通响应速度就是他的生命线。对办公室政治站队毫无兴趣。'}
+  ],
+  finance:[
+    {prefs:{'规则':0.20,'政治':0.15,'沟通':-0.10},desc:'数字不会说谎：要改革拿规则和财务数据来。寒暄式沟通他礼貌但无感。'},
+    {prefs:{'试点':0.20,'规则':0.15,'对话':-0.15},desc:'这局信样本不信故事：小试点的数据他逐行看。感情牌在他这儿等于没有牌。'},
+    {prefs:{'试点':0.25,'规则':0.20,'沟通':-0.15,'政治':-0.15},desc:'风控脑：试点数据加规则条款最能说服他。对一切无法量化的承诺保持职业性微笑。'}
+  ]
+};
+/* v134 平衡器：以 P0 全局总量为基准，各动作类型总量偏差 ≤±0.2 的全部档案组合
+   已离线枚举（12 人 × 3 选 = 531441 种里 114 种可行）。开局从可行清单里均匀随机
+   抽一种——既保证每局难度可比、排行榜公平，又让"谁换了口味"每局真随机。
+   ⚠ 若改动 PROFILE_POOLS 的数值，必须重新生成清单（枚举脚本见 v134 开发记录）。 */
+const PROFILE_TYPES=['示范','政治','对话','沟通','培训','试点','规则'];
+const PROFILE_FEASIBLE=("000000000000,000000000001,000000000010,000000000011,000000000020,000000000100,000000000110,000000000120,000000000200,000000000210,000000000220,000000010010,000000020000,000000100010,000000100110,000000200110,000001000000,000001000010,000001000020,000001000100,000001000120,000001001000,000002000000,000002000010,000002000020,000010000000,000010000010,000010000020,000010000100,000010000110,000010000120,000010001010,000010001110,000010002000,000010002020,000011001010,000012002000,000020000000,000020000001,000020010000,000020100000,000022000000,000100000000,000100000010,000100000100,000101000000,000110000010,000110000110,000200000000,000200000010,000200000100,000201000000,000210000010,001000000000,001000000001,001000000002,001000001000,001000001001,001002000000,001002000020,001002001020,001100000020,002000001000,002000001001,002000001020,002002001000,002002001020,010000000000,010000000200,010000010010,010010000000,010010000010,010010000020,010010000100,010010000101,010010000120,010010001000,010012000100,010012000120,010100000000,020000000000,020000000100,020010000000,020010000010,020010000100,200000000001,200000000101,200000000200,200000001200,200000010010,200000010110,200000020000,200001000100,200001001200,200002000000,200002000010,200002000020,200002000100,200002000110,200002000120,200002001000,200002001010,200002001100,200020000001,200020010000,200022000000,200100000210,200102000010,210000000200,210002000000,210002001000,210010000101,210012000120,220012000100").split(',');
+function assignProfiles(cloned){
+  const ids=Object.keys(PROFILE_POOLS);
+  let code=PROFILE_FEASIBLE[Math.floor(Math.random()*PROFILE_FEASIBLE.length)];
+  if(!code || code.length!==ids.length) code=PROFILE_FEASIBLE[0];   // 兜底全 P0
+  ids.forEach((id,i)=>{
+    const prof=PROFILE_POOLS[id][+code[i]||0];
+    cloned[id].prefs=JSON.parse(JSON.stringify(prof.prefs));
+    cloned[id].desc=prof.desc;
+  });
+}
 /* 状态字形（双编码核心，v47 四档）：初步理解◯ → 有限认同◕ → 完全配合● */
 const AVATARS={
   ceo:'data:image/jpeg;base64,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',
@@ -2462,8 +2546,8 @@ function actionCost(a, n){
   /* v93：perHead——按人头计费。小组聚会 2/3/4 人 = 2/3/4 份资源。
      其它定向动作仍然是「起步价 + 多带一人 +1」。 */
   if(a.perHead) return a.weeks + Math.max(0, k - lo);
-  /* v101：costFn——自定义非线性价格。信息打探 1/2/3 人 = 1/3/6 资源，
-     批量打探省回合但总花费远超逐人深谈，逼玩家在时间和资源之间做取舍。 */
+  /* v134：costFn——自定义非线性价格。信息打探 2/3/4 人 = 1/2/4 资源（v101 原为 1/3/6），
+     批量打探省回合但总花费非线性上涨，逼玩家在时间和资源之间做取舍。 */
   if(a.costFn) return a.costFn(k);
   return a.weeks + Math.min(1, Math.max(0, k - lo));
 }
@@ -2613,13 +2697,13 @@ const ACTIONS=[
      不是因为学生聪明，是因为设计上有一张卡把「调研」和「说服」混成了同一次谈话。
      拆开之后：打探只给信息（1 分），劝说只给推力（不吃偏好）。
      打探的价值不再是「解锁劝说」，而是「让你发现这个人该用哪把工具」。 */
-  {id:'recon',label:'信息打探',weeks:1,cooldown:1,need:3,min:1,costFn:k=>k*(k+1)/2,type:'对话',reqCred:3,disrupt:0,adkar:'AW',
-   desc:'坐下来问，不劝。摸清他到底在担心什么、吃哪一套、跟谁真正走得近。一次可以谈 1–3 个人：谈得越多越省回合，但资源按 1 / 3 / 6 非线性上涨——三个人凑一场，和三个人分开深谈，花的时间一样多。无论谈几个，每个人的动作偏好、当前档位、隐藏目标和台面下的关系都一次看清。它几乎不推人：一次只值 1 分。选多个人的时候注意看价格——多人打探是批量摸底，不是折扣团购。被同一场约谈卷进来的人，彼此也会熟络一分。',
+  {id:'recon',label:'信息打探',weeks:1,cooldown:1,need:4,min:2,costFn:k=>(k<=2?1:(k===3?2:4)),type:'对话',reqCred:3,disrupt:0,adkar:'AW',
+   desc:'坐下来问，不劝。摸清他到底在担心什么、吃哪一套、跟谁真正走得近。一次至少谈 2 个人、最多 4 个：2 人耗 1 份资源，3 人耗 2 份，4 人耗 4 份——人越多越省回合，但总花费非线性上涨。无论谈几个，每个人的动作偏好、人物底细、当前档位、隐藏目标和台面下的关系都一次解锁：打探过的人，社会网络图节点旁会直接标出他的接受度，人物介绍也要打探之后才看得到——每个人的口味每局都不同，别背答案。它几乎不推人：一次只值 1 分。被同一场约谈卷进来的人，彼此也会熟络一分。',
    cooldownReason:'摸底可以频繁做，但连着找同一个人问，他会觉得你只调研不表态。',
    run(ids){
      const n=ids.length;
-     /* v105：无论谈几个人，每个人的偏好、档位、隐藏目标、台面下关系都一次解锁——
-        取舍只在资源价格（1/3/6 非线性）和回合数，不在信息多少。 */
+     /* v105/v134：无论谈几个人，每个人的偏好、档案描述、档位、隐藏目标、台面下关系都一次解锁——
+        取舍只在资源价格（2/3/4 人 = 1/2/4 非线性）和回合数，不在信息多少。 */
      ids.forEach(id=>{
        state.revealed[id]=true;
        state.deepReveal[id]=true;
@@ -3136,6 +3220,8 @@ function clonePeople(){
      而 PEOPLE 的键才是 id、对象里没有这个字段——所以那道"门槛高 5 分"的规则
      自 v48 以来其实一直没生效过。这里补上，规则才真的是规则。 */
   Object.keys(cloned).forEach(id=>{ cloned[id].id = id; });
+  // v134：随机分配偏好档案（含描述），总量平衡器收口
+  assignProfiles(cloned);
   // v17: 恢复用户拖拽过的节点坐标
   try{
     const saved = JSON.parse(safeStorage.getItem('co-v17-nodePos') || '{}');
@@ -3985,7 +4071,7 @@ function renderDetail(id, boxId){
     </div>
   </div>
   ${bridgeNote?`<div style="margin-top:8px">${bridgeNote}</div>`:''}
-  <div class="small" style="margin-top:10px;line-height:1.6">${p.desc}</div>
+  <div class="small" style="margin-top:10px;line-height:1.6">${state.revealed[id]||id==='pm' ? p.desc : '（做一次「信息打探」后，才能了解他的口味与底细——每个人的口味每局都不同，别背答案。）'}</div>
   <div class="small" style="margin-top:10px;padding:10px;background:rgba(255,255,255,.04);border-radius:6px;border-left:3px solid ${factionColor};border:1px solid rgba(255,255,255,.08);border-left:3px solid ${factionColor}">
     <strong style="color:${factionColor}">📊 关键信息</strong><br/>
     • 当前分数：${p.score}<br/>
@@ -4183,6 +4269,26 @@ function drawNetwork(svgId, forceView){
       nodeG.appendChild(stubbornText);
     }
 
+    /* v134：打探过的人，节点右下挂一个小数字徽章 = 当前接受度 */
+    if(state.revealed[id] && id!=='pm'){
+      const badge=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      badge.setAttribute('cx',p.x+20); badge.setAttribute('cy',p.y+20);
+      badge.setAttribute('r','8.5');
+      badge.setAttribute('class','revealed-badge');
+      badge.setAttribute('fill','#0d8b96');
+      badge.setAttribute('stroke','#fff'); badge.setAttribute('stroke-width','1.5');
+      badge.setAttribute('pointer-events','none');
+      const badgeTxt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      badgeTxt.setAttribute('class','revealed-badge-txt');
+      badgeTxt.setAttribute('x',p.x+20); badgeTxt.setAttribute('y',p.y+20);
+      badgeTxt.setAttribute('text-anchor','middle'); badgeTxt.setAttribute('dominant-baseline','central');
+      badgeTxt.setAttribute('font-size','9'); badgeTxt.setAttribute('font-weight','800');
+      badgeTxt.setAttribute('fill','#fff'); badgeTxt.setAttribute('pointer-events','none');
+      badgeTxt.textContent=Math.round(p.score);
+      nodeG.appendChild(badge);
+      nodeG.appendChild(badgeTxt);
+    }
+
     const text=document.createElementNS('http://www.w3.org/2000/svg','text');
     text.setAttribute('class','label');
     text.setAttribute('x',p.x);
@@ -4288,6 +4394,10 @@ function updateNodePosition(svgId, personId){
     if(pmText){ pmText.setAttribute('x',p.x); pmText.setAttribute('y',p.y+5); }
     if(statusRing){ statusRing.setAttribute('cx',p.x+17); statusRing.setAttribute('cy',p.y+17); }
     if(statusGlyph){ statusGlyph.setAttribute('x',p.x+17); statusGlyph.setAttribute('y',p.y+17); }
+    const revBadge = nodeG.querySelector('circle.revealed-badge');
+    const revBadgeTxt = nodeG.querySelector('text.revealed-badge-txt');
+    if(revBadge){ revBadge.setAttribute('cx',p.x+20); revBadge.setAttribute('cy',p.y+20); }
+    if(revBadgeTxt){ revBadgeTxt.setAttribute('x',p.x+20); revBadgeTxt.setAttribute('y',p.y+20); }
   }
   // 更新关联边
   p.ties.forEach(t=>{
@@ -4496,7 +4606,7 @@ function buildActionCard(a, idx){
         if(a.id!=='recon' || !state.selectedTargets || state.selectedTargets.length<2) return '';
         const n=state.selectedTargets.length;
         const c=actionCost(a,n);
-        return `<div class="sit-line warn" style="margin:-4px 0 10px;font-size:11.5px">⚠️ 批量打探：一次谈 ${n} 个人 = ${c} 资源（一对一只要 1，价格非线性上涨）。省下的是回合，多花的是资源；被同一场约谈卷进来的人，彼此也会熟络一分。每个人的信息无论谈几个都挖得一样深。</div>`;
+        return `<div class="sit-line warn" style="margin:-4px 0 10px;font-size:11.5px">⚠️ 批量打探：一次谈 ${n} 个人 = ${c} 资源（2 人=1、3 人=2、4 人=4，非线性上涨）。省下的是回合，多花的是资源；被同一场约谈卷进来的人，彼此也会熟络一分。每个人的信息无论谈几个都挖得一样深。</div>`;
       })()}
       ${(()=>{ // v47：把 ❄ 的含义就地解释，别让学生猜
         const cold=Object.keys(state.people).filter(id=>id!=='pm' && state.people[id].status<2);
